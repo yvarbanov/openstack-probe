@@ -1,0 +1,19 @@
+clouds:
+  overcloud01:
+    auth:
+      auth_url: aut_url
+      project_name: project
+      username: username
+      password: password
+      user_domain_name: Default
+      project_domain_name: Default
+    region_name: regionOne
+  overcloud02:
+    auth:
+      auth_url: aut_url
+      project_name: project
+      username: username
+      password: password
+      user_domain_name: Default
+      project_domain_name: Default
+    region_name: regionOne
