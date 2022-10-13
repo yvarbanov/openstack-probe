@@ -1,5 +1,5 @@
 # openstack-probe
-Probes openstack cloud for resources with no valid (existing) project / orphaned resources.
+Probes openstack cloud for: resources without a valid (existing) project / orphaned resources.
 
 ## How to
 ```console
