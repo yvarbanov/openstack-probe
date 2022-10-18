@@ -60,7 +60,7 @@ def probe_stacks(cloud):
     for stack in stacks:
         if 'FAILED' in stack.status:
             print('Stacks:')
-            print('{}, {}, {}'.format(stack.stack_status, stack.name, stack.stack_status_reason))
+            print('{}, {}, {}'.format(stack.status, stack.name, stack.status_reason))
             print('~ End ~\n')
 
 
