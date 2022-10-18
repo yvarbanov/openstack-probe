@@ -60,7 +60,7 @@ def probe_stacks(cloud):
     for stack in stacks:
         if 'FAILED' in stack.status:
             print('Stacks:')
-            print('{}, {}, {}'.format(stack.status, stack.name, stack.status_reason))
+            print('{}, {}, {}'.format(stack.stack_status, stack.name, stack.stack_status_reason))
             print('~ End ~\n')
 
 
@@ -70,8 +70,9 @@ def probe_network(cloud):
     subnets = _connect(cloud).list_subnets()
     fips = _connect(cloud).list_floating_ips()
     routers = _connect(cloud).list_routers()
-    resources = {'networks': networks, 'subnets': subnets, 'fips': fips, 'routers': routers}
-    N = {'networks': [], 'subnets': [], 'fips': [], 'routers': []}
+    ports = _connect(cloud).list_ports()
+    resources = {'networks': networks, 'subnets': subnets, 'fips': fips, 'routers': routers, 'ports': ports}
+    N = {'networks': [], 'subnets': [], 'fips': [], 'routers': [], 'ports': []}
     for rtype in resources:
         for resource in resources[rtype]:
             if resource.project_id not in projects:
