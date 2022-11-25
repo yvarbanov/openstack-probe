@@ -72,18 +72,22 @@ def probe_network(cloud):
     routers = _connect(cloud).list_routers()
     ports = _connect(cloud).list_ports()
     resources = {'networks': networks, 'subnets': subnets, 'fips': fips, 'routers': routers, 'ports': ports}
-    N = {'networks': [], 'subnets': [], 'fips': [], 'routers': [], 'ports': []}
+    N = {'networks': [], 'subnets': [], 'fips': [], 'routers': [], 'ports': [], 'trunks': []}
     for rtype in resources:
         for resource in resources[rtype]:
             if resource.project_id not in projects:
-                N[rtype].append(resource)
-    for rtype in N:
-        if len(N[rtype]) > 0:
-            print('Network:')
-            print('{} {} with no valid project id'.format(len(N[rtype]), rtype))
-            print(rtype)
-            print(*[n.id for n in N[rtype]])
-            print('~ End ~\n')
+                if 'trunk_details' in resource and resource['trunk_details']:
+                    N['trunks'].append(resource)
+                else:   
+                    N[rtype].append(resource)
+    if any(N.values()):
+        print('Network:')
+        for rtype in N:
+            if len(N[rtype]) > 0:
+                print('{} {} with no valid project id'.format(len(N[rtype]), rtype))
+                print(rtype)
+                print(*[n.id for n in N[rtype]])
+                print('~ End ~\n')
 
 
 def probe_compute(cloud):
