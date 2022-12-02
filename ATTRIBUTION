@@ -1,3 +1,4 @@
-This project is an update and port to python3 of https://github.com/vinothkumarselvaraj/openstack-orphaned-resource by yvarbanov, adjusting for new resource types (like trunk ports)
+This project is an update and port to python3 of openstack-orphaned-resource, adjusting for new resource types (like trunk ports) done by yvarbanov
+Link: github.com/vinothkumarselvaraj/openstack-orphaned-resource
 Original Author: vinothkumarselvaraj
-Porter: yvarbanov
+Porter: github.com/yvarbanov

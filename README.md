@@ -8,3 +8,9 @@ cd osp-probe
 vim clouds.yaml
 bash quickstart.sh
 ```
+
+## Want to contribute?
+-  Feel free to open a PR
+
+## Found any problems?
+- Open an Issue
