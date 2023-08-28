@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import argparse
-
 """
 name:             :probe_osp.py
 description       :checks openstack resources for valid(existing) project id.
@@ -11,29 +9,15 @@ release           :22/07
 version           :0.1
 """
 
-### cleanup filenames
-#users.osprobe.cleanup
-#fips.osprobe.cleanup
-#networks.osprobe.cleanup
-#ports.osprobe.cleanup
-#routers.osprobe.cleanup
-#subnets.osprobe.cleanup
-#stacks.osprobe.cleanup
-#trunks.osprobe.cleanup
-#vms.osprobe.cleanup
-#security groups.osprobe.cleanup
-
-
+import argparse
 parser = argparse.ArgumentParser(description='Options for probe_osp.py')
 parser.add_argument('-c', '--cleanup', help='creates individual resource files in the target directory', required=False, type=str, dest='directory')
 args = parser.parse_args()
-
 if args.directory:
     cleanup_bool = True
+    print(f"Cleanup files: {cleanup_bool}")
 else:
     cleanup_bool = False
-
-print(f"Boolean is {cleanup_bool}")
 
 
 def _connect(cloud):
@@ -76,7 +60,7 @@ def probe_users(cloud):
                 sU.append(user.name)
     print('Users:')
     print(len(xU), 'users with no valid project id or email')
-    if cleanup_bool is True:
+    if cleanup_bool:
       filename = f"{args.directory}/users.osprobe.cleanup"
       f = open(filename, 'w')
       for item in xU:
@@ -95,13 +79,12 @@ def probe_stacks(cloud):
             print('Stacks:')
             print('{}, {}, {}'.format(stack.status, stack.name, stack.status_reason))
             print('~ End ~\n')
-    if len(stacks) != 0:
-        if cleanup_bool is True:
-            filename = f"{args.directory}/{rtype}.osprobe.cleanup"
-            f = open(filename, 'w')
-            for item in stacks:
-                f.write(item.name + "\n")
-            f.close
+            if cleanup_bool:
+                filename = f"{args.directory}/stacks.osprobe.cleanup"
+                f = open(filename, 'w')
+                for item in stacks:
+                    f.write(item.name + "\n")
+                f.close
 
 
 def probe_network(cloud):
@@ -124,7 +107,7 @@ def probe_network(cloud):
         print('Network:')
         for rtype in N:
             if len(N[rtype]) > 0:
-                if cleanup_bool is True:
+                if cleanup_bool:
                     filename = f"{args.directory}/{rtype}.osprobe.cleanup"
                     f = open(filename, 'w')
                     for item in N[rtype]:
@@ -148,15 +131,21 @@ def probe_compute(cloud):
     for sg in sgs:
         if sg.project_id not in projects:
             xSG.append(sg)
-    print('Compute:')
-    print(len(xVM), 'vms with no valid project id')
-    if len(xVM) == 0:
-        if cleanup_bool is True:
+    if cleanup_bool:
+        if len(xVM) > 0:
            filename = f"{args.directory}/vm.osprobe.cleanup"
            f = open(filename, 'w')
            for item in xVM:
                f.write(item + "\n")
            f.close
+        if len(xSG) > 0:
+           filename = f"{args.directory}/security_groups.osprobe.cleanup"
+           f = open(filename, 'w')
+           for item in xSG:
+               f.write(item + "\n")
+           f.close
+    print('Compute:')
+    print(len(xVM), 'vms with no valid project id')
     print(*[x.id for x in xVM])
     print(len(xSG), 'security groups with no valid project id')
     print(*[x.id for x in xSG])
