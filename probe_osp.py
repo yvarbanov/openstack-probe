@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import argparse
+
 """
 name:             :probe_osp.py
 description       :checks openstack resources for valid(existing) project id.
@@ -8,6 +10,31 @@ author            :yvarbev@redhat.com
 release           :22/07
 version           :0.1
 """
+
+### cleanup filenames
+#users.osprobe.cleanup
+#fips.osprobe.cleanup
+#networks.osprobe.cleanup
+#ports.osprobe.cleanup
+#routers.osprobe.cleanup
+#subnets.osprobe.cleanup
+#stacks.osprobe.cleanup
+#trunks.osprobe.cleanup
+#vms.osprobe.cleanup
+#security groups.osprobe.cleanup
+
+
+parser = argparse.ArgumentParser(description='Options for probe_osp.py')
+parser.add_argument('-c', '--cleanup', help='creates individual resource files in the target directory', required=False, type=str, dest='directory')
+args = parser.parse_args()
+
+if args.directory:
+    cleanup_bool = True
+else:
+    cleanup_bool = False
+
+print(f"Boolean is {cleanup_bool}")
+
 
 def _connect(cloud):
     import openstack
@@ -20,16 +47,16 @@ def _connect(cloud):
         username = os.getenv('OS_USERNAME')
         password = os.getenv('OS_PASSWORD')
         return openstack.connection.Connection(
-                    auth=dict(
-                    auth_url=server,
-                    project_name=project,
-                    username=username,
-                    password=password,
-                    project_domain_name="Default",
-                    user_domain_name="Default"),
-                    identity_api_version=3,
-                    region_name="regionOne",
-                )
+            auth=dict(
+                auth_url=server,
+                project_name=project,
+                username=username,
+                password=password,
+                project_domain_name="Default",
+                user_domain_name="Default"),
+            identity_api_version=3,
+            region_name="regionOne",
+        )
 
 
 def _projects(cloud):
@@ -49,6 +76,12 @@ def probe_users(cloud):
                 sU.append(user.name)
     print('Users:')
     print(len(xU), 'users with no valid project id or email')
+    if cleanup_bool is True:
+      filename = f"{args.directory}/users.osprobe.cleanup"
+      f = open(filename, 'w')
+      for item in xU:
+        f.write(item + "\n")
+      f.close
     print(*xU)
     print(len(sU), 'users with no valid project id but have email (service users?)')
     print(*sU)
@@ -62,6 +95,13 @@ def probe_stacks(cloud):
             print('Stacks:')
             print('{}, {}, {}'.format(stack.status, stack.name, stack.status_reason))
             print('~ End ~\n')
+    if len(stacks) != 0:
+        if cleanup_bool is True:
+            filename = f"{args.directory}/{rtype}.osprobe.cleanup"
+            f = open(filename, 'w')
+            for item in stacks:
+                f.write(item.name + "\n")
+            f.close
 
 
 def probe_network(cloud):
@@ -78,12 +118,18 @@ def probe_network(cloud):
             if resource.project_id not in projects:
                 if 'trunk_details' in resource and resource['trunk_details']:
                     N['trunks'].append(resource)
-                else:   
+                else:
                     N[rtype].append(resource)
     if any(N.values()):
         print('Network:')
         for rtype in N:
             if len(N[rtype]) > 0:
+                if cleanup_bool is True:
+                    filename = f"{args.directory}/{rtype}.osprobe.cleanup"
+                    f = open(filename, 'w')
+                    for item in N[rtype]:
+                        f.write(item.id + "\n")
+                    f.close
                 print('{} {} with no valid project id'.format(len(N[rtype]), rtype))
                 print(rtype)
                 print(*[n.id for n in N[rtype]])
@@ -104,6 +150,13 @@ def probe_compute(cloud):
             xSG.append(sg)
     print('Compute:')
     print(len(xVM), 'vms with no valid project id')
+    if len(xVM) == 0:
+        if cleanup_bool is True:
+           filename = f"{args.directory}/vm.osprobe.cleanup"
+           f = open(filename, 'w')
+           for item in xVM:
+               f.write(item + "\n")
+           f.close
     print(*[x.id for x in xVM])
     print(len(xSG), 'security groups with no valid project id')
     print(*[x.id for x in xSG])
@@ -134,4 +187,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
