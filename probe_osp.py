@@ -61,11 +61,11 @@ def probe_users(cloud):
     print('Users:')
     print(len(xU), 'users with no valid project id or email')
     if cleanup_bool:
-      filename = f"{args.directory}/users.osprobe.cleanup"
-      f = open(filename, 'w')
-      for item in xU:
-        f.write(item + "\n")
-      f.close
+        filename = f"{args.directory}/users.osprobe.cleanup"
+        f = open(filename, 'w')
+        for item in xU:
+            f.write(item + "\n")
+        f.close
     print(*xU)
     print(len(sU), 'users with no valid project id but have email (service users?)')
     print(*sU)
@@ -133,17 +133,17 @@ def probe_compute(cloud):
             xSG.append(sg)
     if cleanup_bool:
         if len(xVM) > 0:
-           filename = f"{args.directory}/vm.osprobe.cleanup"
-           f = open(filename, 'w')
-           for item in xVM:
-               f.write(item + "\n")
-           f.close
+            filename = f"{args.directory}/vm.osprobe.cleanup"
+            f = open(filename, 'w')
+            for item in xVM:
+                f.write(item.id + "\n")
+            f.close
         if len(xSG) > 0:
-           filename = f"{args.directory}/security_groups.osprobe.cleanup"
-           f = open(filename, 'w')
-           for item in xSG:
-               f.write(item + "\n")
-           f.close
+            filename = f"{args.directory}/security_groups.osprobe.cleanup"
+            f = open(filename, 'w')
+            for item in xSG:
+                f.write(item.id + "\n")
+            f.close
     print('Compute:')
     print(len(xVM), 'vms with no valid project id')
     print(*[x.id for x in xVM])
