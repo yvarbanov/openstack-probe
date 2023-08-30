@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 """
 name:             :probe_osp.py
 description       :checks openstack resources for valid(existing) project id.
@@ -8,14 +7,33 @@ author            :yvarbev@redhat.com
 release           :22/07
 version           :0.1
 """
-
 import argparse
+
+cleanup_files = [
+    "users.osprobe.cleanup",
+    "fips.osprobe.cleanup",
+    "networks.osprobe.cleanup",
+    "ports.osprobe.cleanup",
+    "routers.osprobe.cleanup",
+    "subnets.osprobe.cleanup",
+    "stacks.osprobe.cleanup",
+    "trunks.osprobe.cleanup",
+    "vms.osprobe.cleanup",
+    "security_groups.osprobe.cleanup"]
+
 parser = argparse.ArgumentParser(description='Options for probe_osp.py')
 parser.add_argument('-c', '--cleanup', help='creates individual resource files in the target directory', required=False, type=str, dest='directory')
 args = parser.parse_args()
+
 if args.directory:
     cleanup_bool = True
     print(f"Cleanup files: {cleanup_bool}")
+    import os
+    for file in cleanup_files:
+        filename = f"{args.directory}/{file}"
+        if os.path.exists(filename):
+            print(f"removing stale file {filename}")
+            os.remove(filename)
 else:
     cleanup_bool = False
 
@@ -60,7 +78,7 @@ def probe_users(cloud):
                 sU.append(user.name)
     print('Users:')
     print(len(xU), 'users with no valid project id or email')
-    if cleanup_bool:
+    if cleanup_bool and len(xU) > 0:
         filename = f"{args.directory}/users.osprobe.cleanup"
         f = open(filename, 'w')
         for item in xU:
@@ -74,17 +92,20 @@ def probe_users(cloud):
 
 def probe_stacks(cloud):
     stacks = _connect(cloud).list_stacks()
+    failed_stacks = []
     for stack in stacks:
         if 'FAILED' in stack.status:
+            failed_stacks.append(stack.id)
             print('Stacks:')
             print('{}, {}, {}'.format(stack.status, stack.name, stack.status_reason))
             print('~ End ~\n')
-            if cleanup_bool:
-                filename = f"{args.directory}/stacks.osprobe.cleanup"
-                f = open(filename, 'w')
-                for item in stacks:
-                    f.write(item.name + "\n")
-                f.close
+    if cleanup_bool:
+        if len(failed_stacks) > 0:
+            filename = f"{args.directory}/stacks.osprobe.cleanup"
+            f = open(filename, 'w')
+            for item in failed_stacks:
+                f.write(item + "\n")
+            f.close
 
 
 def probe_network(cloud):
