@@ -47,6 +47,7 @@ do
   shift
 done
 
+
 if [ ! -d "${clean_data_directory}" ] ; then
   echo "clean data directory option \"${clean_data_directory}\" is not a directory"
   usage

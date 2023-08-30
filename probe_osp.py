@@ -78,7 +78,7 @@ def probe_users(cloud):
                 sU.append(user.name)
     print('Users:')
     print(len(xU), 'users with no valid project id or email')
-    if cleanup_bool:
+    if cleanup_bool and len(xU) > 0:
         filename = f"{args.directory}/users.osprobe.cleanup"
         f = open(filename, 'w')
         for item in xU:
@@ -95,7 +95,7 @@ def probe_stacks(cloud):
     failed_stacks = []
     for stack in stacks:
         if 'FAILED' in stack.status:
-            failed_stacks.append(stack.name)
+            failed_stacks.append(stack.id)
             print('Stacks:')
             print('{}, {}, {}'.format(stack.status, stack.name, stack.status_reason))
             print('~ End ~\n')
