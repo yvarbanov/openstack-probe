@@ -12,13 +12,6 @@ import openstack
 import os
 import yaml
 
-parser = argparse.ArgumentParser(description='Clean up OSP data')
-parser.add_argument('-c', '--clean-directory', help='Directory containing the probe_osp.py cleanup data', required=True, type=str, dest='directory')
-args = parser.parse_args()
-
-#clean_directory = args.directory
-clean_directory = '/tmp'
-
 # cleanup_files = [
 #    "users.osprobe.cleanup",
 #    "fips.osprobe.cleanup",
@@ -31,10 +24,16 @@ clean_directory = '/tmp'
 #    "vms.osprobe.cleanup",
 #    "security_groups.osprobe.cleanup"]
 
-#if args.directory:
-if clean_directory:
-     #clean_directory = args.directory
-     print(f"{clean_directory} activated")
+
+parser = argparse.ArgumentParser(description='Clean up OSP data')
+parser.add_argument('-c', '--clean-directory', help='Directory containing the probe_osp.py cleanup data', required=True, type=str, dest='directory')
+parser.add_argument('-d', '--debug', help='Print debug information instead of being silent', action="store_true", dest='debug')
+args = parser.parse_args()
+
+clean_directory = args.directory
+
+if args.directory:
+     clean_directory = args.directory
 else:
     print('Please specify the directory containing the osprobe cleanup data')
     exit(1)
@@ -67,17 +66,22 @@ def delete_users(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"searching for user {clean_line}\n")
+                    if args.debug:
+                        print(f"searching for user {clean_line}\n") if args.debug else 0
                     userid = cloud_connection.identity.find_user(clean_line).id
-                    try: 
-                        print(f"deleting user {clean_line}\n")
+                    try:
+                        if args.debug:
+                            print(f"deleting user {clean_line}\n")
                         cloud_connection.identity.delete_user(userid)
                     except Exception as e:
-                        print(f"user unable to delete: {e}\n")
+                        if args.debug:
+                            print(f"user unable to delete: {e}\n")
                 except Exception as e:
-                    print(f"user {clean_line} not found: {e}\n")
+                    if args.debug:
+                        print(f"user {clean_line} not found: {e}\n")
     else:
-        print("No user deletion file found, skipping\n")
+        if args.debug:
+            print("No user deletion file found, skipping\n")
 
 def delete_vms(directory, cloud_connection):
     """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/vms.osprobe.cleanup"""
@@ -87,12 +91,15 @@ def delete_vms(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting vm {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting vm {clean_line}\n")
                     cloud_connection.compute.delete_server(clean_line)
                 except Exception as e:
-                    print(f"vm {clean_line} unable to delete: {e}\n") 
+                    if args.debug:
+                        print(f"vm {clean_line} unable to delete: {e}\n") 
     else:
-        print("No vm deletion file found, skipping\n")
+        if args.debug:
+            print("No vm deletion file found, skipping\n")
         
 def delete_fips(directory, cloud_connection):
     """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/fips.osprobe.cleanup"""
@@ -102,12 +109,15 @@ def delete_fips(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting floating ip {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting floating ip {clean_line}\n")
                     cloud_connection.network.delete_ip(clean_line)
                 except Exception as e:
-                    print(f"floating ip {clean_line} unable to delete: {e}\n") 
+                    if args.debug:
+                        print(f"floating ip {clean_line} unable to delete: {e}\n") 
     else:
-        print("No fip deletion file found, skipping\n")
+        if args.debug:
+            print("No fip deletion file found, skipping\n")
 
 
 #def delete_trunks(directory, cloud_connection):# TODO: DEFINE THIS FUNCTION
@@ -121,12 +131,15 @@ def delete_ports(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting port {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting port {clean_line}\n")
                     cloud_connection.network.delete_port(clean_line)
                 except Exception as e:
-                    print(f"port {clean_line} unable to delete: {e}\n") 
+                    if args.debug:
+                        print(f"port {clean_line} unable to delete: {e}\n") 
     else:
-        print("No port deletion file found, skipping\n")
+        if args.debug:
+            print("No port deletion file found, skipping\n")
 
 
 def delete_networks(directory, cloud_connection):
@@ -137,12 +150,15 @@ def delete_networks(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting network {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting network {clean_line}\n")
                     cloud_connection.network.delete_network(clean_line)
                 except Exception as e:
-                    print(f"network {clean_line} unable to delete: {e}\n") 
+                    if args.debug:
+                        print(f"network {clean_line} unable to delete: {e}\n") 
     else:
-        print("No network deletion file found, skipping\n")
+        if args.debug:
+            print("No network deletion file found, skipping\n")
 
 
 def delete_subnets(directory, cloud_connection):    
@@ -153,12 +169,15 @@ def delete_subnets(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting subnet {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting subnet {clean_line}\n")
                     cloud_connection.network.delete_subnet(clean_line)
                 except Exception as e:
-                    print(f"subnet {clean_line} unable to delete: {e}\n") 
+                    if args.debug:
+                        print(f"subnet {clean_line} unable to delete: {e}\n") 
     else:
-        print("No subnet deletion file found, skipping\n")
+        if args.debug:
+            print("No subnet deletion file found, skipping\n")
         
         
 #def delete_routers(directory, cloud_connection):# TODO: DEFINE THIS FUNCTION
@@ -172,12 +191,15 @@ def delete_stacks(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting stack {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting stack {clean_line}\n")
                     cloud_connection.orchestration.delete_stack(clean_line)
                 except Exception as e:
-                    print(f"stack {clean_line} unable to delete: {e}\n")     
+                    if args.debug:
+                        print(f"stack {clean_line} unable to delete: {e}\n")     
     else:
-        print("No stack deletion file found, skipping\n")    
+        if args.debug:
+            print("No stack deletion file found, skipping\n")    
    
    
     
@@ -189,18 +211,22 @@ def delete_security_groups(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting security_group {clean_line}\n")
+                    if args.debug:
+                        print(f"deleting security_group {clean_line}\n")
                     cloud_connection.network.delete_security_group(clean_line)
                 except Exception as e:
-                    print(f"security_group {clean_line} unable to delete: {e}\n")     
+                    if args.debug:
+                        print(f"security_group {clean_line} unable to delete: {e}\n")     
     else:
-        print("No security_group deletion file found, skipping\n")        
+        if args.debug:
+            print("No security_group deletion file found, skipping\n")        
     
 
 
 def runner(cloud):
     if cloud:
-        print('Probing cloud: {}'.format(cloud))
+        if args.debug:
+            print('Probing cloud: {}'.format(cloud))
     connection = _connect(cloud)
     delete_users(clean_directory, connection)
     delete_vms(clean_directory, connection)
