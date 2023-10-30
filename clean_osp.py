@@ -59,7 +59,7 @@ def _connect(cloud):
             region_name="regionOne",
         )
 
-def delete_users(directory, connection):
+def delete_users(directory, cloud_connection):
     """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/users.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'users.osprobe.cleanup')):
         with open(os.path.join(directory, 'users.osprobe.cleanup'), 'r') as f:
@@ -67,7 +67,7 @@ def delete_users(directory, connection):
             for line in lines:
                 try:
                     print(f"deleting user {line}\n")
-                    connection.identity.delete_user(line)
+                    cloud_connection.identity.delete_user(line)
                 except ResourceNotFound:
                     print(f"user {line} not found\n")
     else:
@@ -81,7 +81,7 @@ def delete_vms(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting vm {line}\n")
-                    connection.compute.delete_server(line)
+                    cloud_connection.compute.delete_server(line)
                 except ResourceNotFound:
                     print(f"vm {line} not found\n") 
     else:
@@ -95,7 +95,7 @@ def delete_fips(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting floating ip {line}\n")
-                    connection.network.delete_ip(line)
+                    cloud_connection.network.delete_ip(line)
                 except ResourceNotFound:
                     print(f"floating ip {line} not found\n") 
     else:
@@ -113,7 +113,7 @@ def delete_ports(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting port {line}\n")
-                    connection.network.delete_port(line)
+                    cloud_connection.network.delete_port(line)
                 except ResourceNotFound:
                     print(f"port {line} not found\n") 
     else:
@@ -128,7 +128,7 @@ def delete_networks(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting network {line}\n")
-                    connection.network.delete_network(line)
+                    cloud_connection.network.delete_network(line)
                 except ResourceNotFound:
                     print(f"network {line} not found\n") 
     else:
@@ -143,7 +143,7 @@ def delete_subnets(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting subnet {line}\n")
-                    connection.network.delete_subnet(line)
+                    cloud_connection.network.delete_subnet(line)
                 except ResourceNotFound:
                     print(f"subnet {line} not found\n") 
     else:
@@ -161,7 +161,7 @@ def delete_stacks(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting stack {line}\n")
-                    connection.orchestration.delete_stack(line)
+                    cloud_connection.orchestration.delete_stack(line)
                 except ResourceNotFound:
                     print(f"stack {line} not found\n")     
     else:
@@ -177,7 +177,7 @@ def delete_security_groups(directory, cloud_connection):
             for line in lines:
                 try:
                     print(f"deleting security_group {line}\n")
-                    connection.network.delete_security_group(line)
+                    cloud_connection.network.delete_security_group(line)
                 except ResourceNotFound:
                     print(f"security_group {line} not found\n")     
     else:
