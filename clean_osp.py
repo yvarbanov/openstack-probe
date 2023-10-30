@@ -65,11 +65,17 @@ def delete_users(directory, cloud_connection):
         with open(os.path.join(directory, 'users.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting user {line}\n")
-                    cloud_connection.identity.delete_user(line)
-                except ResourceNotFound:
-                    print(f"user {line} not found\n")
+                    print(f"searching for user {clean_line}\n")
+                    userid = cloud_connection.identity.find_user(clean_line).id
+                    try: 
+                        print(f"deleting user {clean_line}\n")
+                        cloud_connection.identity.delete_user(userid)
+                    except Exception as e:
+                        print(f"user unable to delete: {e}\n")
+                except Exception as e:
+                    print(f"user {clean_line} not found: {e}\n")
     else:
         print("No user deletion file found, skipping\n")
 
@@ -79,11 +85,12 @@ def delete_vms(directory, cloud_connection):
         with open(os.path.join(directory, 'vms.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting vm {line}\n")
-                    cloud_connection.compute.delete_server(line)
-                except ResourceNotFound:
-                    print(f"vm {line} not found\n") 
+                    print(f"deleting vm {clean_line}\n")
+                    cloud_connection.compute.delete_server(clean_line)
+                except Exception as e:
+                    print(f"vm {clean_line} unable to delete: {e}\n") 
     else:
         print("No vm deletion file found, skipping\n")
         
@@ -93,11 +100,12 @@ def delete_fips(directory, cloud_connection):
         with open(os.path.join(directory, 'fips.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting floating ip {line}\n")
-                    cloud_connection.network.delete_ip(line)
-                except ResourceNotFound:
-                    print(f"floating ip {line} not found\n") 
+                    print(f"deleting floating ip {clean_line}\n")
+                    cloud_connection.network.delete_ip(clean_line)
+                except Exception as e:
+                    print(f"floating ip {clean_line} unable to delete: {e}\n") 
     else:
         print("No fip deletion file found, skipping\n")
 
@@ -111,11 +119,12 @@ def delete_ports(directory, cloud_connection):
         with open(os.path.join(directory, 'ports.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting port {line}\n")
-                    cloud_connection.network.delete_port(line)
-                except ResourceNotFound:
-                    print(f"port {line} not found\n") 
+                    print(f"deleting port {clean_line}\n")
+                    cloud_connection.network.delete_port(clean_line)
+                except Exception as e:
+                    print(f"port {clean_line} unable to delete: {e}\n") 
     else:
         print("No port deletion file found, skipping\n")
 
@@ -126,11 +135,12 @@ def delete_networks(directory, cloud_connection):
         with open(os.path.join(directory, 'networks.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting network {line}\n")
-                    cloud_connection.network.delete_network(line)
-                except ResourceNotFound:
-                    print(f"network {line} not found\n") 
+                    print(f"deleting network {clean_line}\n")
+                    cloud_connection.network.delete_network(clean_line)
+                except Exception as e:
+                    print(f"network {clean_line} unable to delete: {e}\n") 
     else:
         print("No network deletion file found, skipping\n")
 
@@ -141,11 +151,12 @@ def delete_subnets(directory, cloud_connection):
         with open(os.path.join(directory, 'subnets.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting subnet {line}\n")
-                    cloud_connection.network.delete_subnet(line)
-                except ResourceNotFound:
-                    print(f"subnet {line} not found\n") 
+                    print(f"deleting subnet {clean_line}\n")
+                    cloud_connection.network.delete_subnet(clean_line)
+                except Exception as e:
+                    print(f"subnet {clean_line} unable to delete: {e}\n") 
     else:
         print("No subnet deletion file found, skipping\n")
         
@@ -159,11 +170,12 @@ def delete_stacks(directory, cloud_connection):
         with open(os.path.join(directory, 'stacks.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting stack {line}\n")
-                    cloud_connection.orchestration.delete_stack(line)
-                except ResourceNotFound:
-                    print(f"stack {line} not found\n")     
+                    print(f"deleting stack {clean_line}\n")
+                    cloud_connection.orchestration.delete_stack(clean_line)
+                except Exception as e:
+                    print(f"stack {clean_line} unable to delete: {e}\n")     
     else:
         print("No stack deletion file found, skipping\n")    
    
@@ -175,11 +187,12 @@ def delete_security_groups(directory, cloud_connection):
         with open(os.path.join(directory, 'security_groups.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
             for line in lines:
+                clean_line=line.replace('\n', '')
                 try:
-                    print(f"deleting security_group {line}\n")
-                    cloud_connection.network.delete_security_group(line)
-                except ResourceNotFound:
-                    print(f"security_group {line} not found\n")     
+                    print(f"deleting security_group {clean_line}\n")
+                    cloud_connection.network.delete_security_group(clean_line)
+                except Exception as e:
+                    print(f"security_group {clean_line} unable to delete: {e}\n")     
     else:
         print("No security_group deletion file found, skipping\n")        
     
