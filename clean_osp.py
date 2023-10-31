@@ -236,7 +236,7 @@ def delete_routers(directory, cloud_connection):
                                         print(f"Removing Router subnet attachment: {my_portid} {my_subnetid}\n")
                                     cloud_connection.network.remove_interface_from_router(router_id, my_subnetid, my_portid)
                     if args.debug:
-                            print(f"Directly remove the router {router_id}\n")
+                        print(f"Directly remove the router {router_id}\n")
                     cloud_connection.network.delete_router(router)
                 except Exception as e:
                     if args.debug:
