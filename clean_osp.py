@@ -128,7 +128,7 @@ def delete_trunks(directory, cloud_connection):
             for line in lines:
                 clean_line=line.replace('\n', '')
                 try:
-                    my_trunk_id = connection.network.get_port(clean_line).trunk_details["trunk_id"]
+                    my_trunk_id = cloud_connection.network.get_port(clean_line).trunk_details["trunk_id"]
                     if args.debug:
                         print(f"deleting trunk {clean_line}\n")
                         if my_trunk_id:
@@ -136,8 +136,8 @@ def delete_trunks(directory, cloud_connection):
                         else:
                             print(f"No Trunk ID for port {clean_line}\n")
                     if my_trunk_id:
-                        connection.network.delete_trunk(my_trunk_id)
-                        connection.network.delete_port(clean_line)
+                        cloud_connection.network.delete_trunk(my_trunk_id)
+                        cloud_connection.network.delete_port(clean_line)
                 except Exception as e:
                     if args.debug:
                         print(f"trunk {clean_line} unable to delete: {e}\n") 
@@ -227,13 +227,13 @@ def delete_routers(directory, cloud_connection):
                         filters['device_id'] = router_id                       
                         for port in list(cloud_connection.network.ports(**filters)):
                             if port.device_owner != "network:router_gateway":
-                                if args.debug:
-                                    print(f"Found attachment outside of gatewayport: subnet {my_subnetid}\n")
                                 my_portid = port.id
+                                if args.debug:
+                                    print(f"Found attachment outside of gatewayport: port {my_portid}\n")
                                 for ip_spec in port.fixed_ips:
                                     my_subnetid = ip_spec.get('subnet_id')
                                     if args.debug:
-                                        print(f"Removing Router subnet attachment: {my_portid} {my_subnetid}\n")
+                                        print(f"Removing Router subnet attachment: port {my_portid} subnet {my_subnetid}\n")
                                     cloud_connection.network.remove_interface_from_router(router_id, my_subnetid, my_portid)
                     if args.debug:
                         print(f"Directly remove the router {router_id}\n")
@@ -295,9 +295,9 @@ def runner(cloud):
     delete_fips(clean_directory, connection)
     delete_trunks(clean_directory, connection)
     delete_ports(clean_directory, connection)
+    delete_routers(clean_directory, connection)
     delete_subnets(clean_directory, connection)
     delete_networks(clean_directory, connection)
-    delete_routers(clean_directory, connection)
     delete_security_groups(clean_directory, connection)
     delete_stacks(clean_directory, connection)
     
