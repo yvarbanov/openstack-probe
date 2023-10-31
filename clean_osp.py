@@ -37,7 +37,7 @@ if args.directory:
 else:
     print('Please specify the directory containing the osprobe cleanup data')
     exit(1)
-
+# clean_directory = "/tmp"
 def _connect(cloud):
     if os.getenv('OS_CLIENT_CONFIG_FILE'):
         return openstack.connection.Connection(cloud=cloud)
@@ -84,7 +84,7 @@ def delete_users(directory, cloud_connection):
             print("No user deletion file found, skipping\n")
 
 def delete_vms(directory, cloud_connection):
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/vms.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the vm ID from directory/vms.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'vms.osprobe.cleanup')):
         with open(os.path.join(directory, 'vms.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -102,7 +102,7 @@ def delete_vms(directory, cloud_connection):
             print("No vm deletion file found, skipping\n")
         
 def delete_fips(directory, cloud_connection):
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/fips.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the floating ip ID from directory/fips.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'fips.osprobe.cleanup')):
         with open(os.path.join(directory, 'fips.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -120,11 +120,34 @@ def delete_fips(directory, cloud_connection):
             print("No fip deletion file found, skipping\n")
 
 
-#def delete_trunks(directory, cloud_connection):# TODO: DEFINE THIS FUNCTION
+def delete_trunks(directory, cloud_connection):
+    """This function takes a directory path and an existing Openstack connection and deletes the trunk ID from directory/trunks.osprobe.cleanup"""
+    if os.path.exists(os.path.join(directory, 'trunks.osprobe.cleanup')):
+        with open(os.path.join(directory, 'trunks.osprobe.cleanup'), 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                clean_line=line.replace('\n', '')
+                try:
+                    my_trunk_id = connection.network.get_port(clean_line).trunk_details["trunk_id"]
+                    if args.debug:
+                        print(f"deleting trunk {clean_line}\n")
+                        if my_trunk_id:
+                            print(f"Trunk ID for port {clean_line} is {my_trunk_id}\n")
+                        else:
+                            print(f"No Trunk ID for port {clean_line}\n")
+                    if my_trunk_id:
+                        connection.network.delete_trunk(my_trunk_id)
+                        connection.network.delete_port(clean_line)
+                except Exception as e:
+                    if args.debug:
+                        print(f"trunk {clean_line} unable to delete: {e}\n") 
+    else:
+        if args.debug:
+            print("No trunk deletion file found, skipping\n")
 
     
 def delete_ports(directory, cloud_connection):
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/ports.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the port ID from directory/ports.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'ports.osprobe.cleanup')):
         with open(os.path.join(directory, 'ports.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -143,7 +166,7 @@ def delete_ports(directory, cloud_connection):
 
 
 def delete_networks(directory, cloud_connection):
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/networks.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the network ID from directory/networks.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'networks.osprobe.cleanup')):
         with open(os.path.join(directory, 'networks.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -162,7 +185,7 @@ def delete_networks(directory, cloud_connection):
 
 
 def delete_subnets(directory, cloud_connection):    
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/subnets.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the subnet ID from directory/subnets.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'subnets.osprobe.cleanup')):
         with open(os.path.join(directory, 'subnets.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -180,11 +203,50 @@ def delete_subnets(directory, cloud_connection):
             print("No subnet deletion file found, skipping\n")
         
         
-#def delete_routers(directory, cloud_connection):# TODO: DEFINE THIS FUNCTION
-    
+def delete_routers(directory, cloud_connection):
+    """This function takes a directory path and an existing Openstack connection and attempts to delete the router ID from directory/routers.osprobe.cleanup"""
+    if os.path.exists(os.path.join(directory, 'routers.osprobe.cleanup')):
+        with open(os.path.join(directory, 'routers.osprobe.cleanup'), 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                clean_line=line.replace('\n', '')
+                try:
+                    router = cloud_connection.network.get_router(clean_line)
+                    if router:
+                        router_id = router.id
+                        if args.debug:
+                            print(f"Beginning deleting surrounding router information for router: {clean_line}\n")
+                        if router.external_gateway_info:
+                            if args.debug:
+                                print(f"Removing Router external_gateway\n")
+                            cloud_connection.network.remove_gateway_from_router(clean_line)
+                        # Now we have to cycle through the interfaces just like the openstack cli does
+                        if args.debug:
+                            print(f"Removing Router subnet attachments\n")
+                        filters = {}
+                        filters['device_id'] = router_id                       
+                        for port in list(cloud_connection.network.ports(**filters)):
+                            if port.device_owner != "network:router_gateway":
+                                if args.debug:
+                                    print(f"Found attachment outside of gatewayport: {my_portid} {my_subnetid}\n")
+                                my_portid = port.id
+                                for ip_spec in port.fixed_ips:
+                                    my_subnetid = ip_spec.get('subnet_id')
+                                    if args.debug:
+                                        print(f"Removing Router subnet attachment: {my_portid} {my_subnetid}\n")
+                                    cloud_connection.network.remove_interface_from_router(router_id, my_subnetid, my_portid)
+                    if args.debug:
+                            print(f"Directly remove the router {router_id}\n")
+                    cloud_connection.network.delete_router(router)
+                except Exception as e:
+                    if args.debug:
+                        print(f"router {clean_line} unable to delete: {e}\n") 
+    else:
+        if args.debug:
+            print("No router deletion file found, skipping\n")
     
 def delete_stacks(directory, cloud_connection):
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/stacks.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the stack ID from directory/stacks.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'stacks.osprobe.cleanup')):
         with open(os.path.join(directory, 'stacks.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -204,7 +266,7 @@ def delete_stacks(directory, cloud_connection):
    
     
 def delete_security_groups(directory, cloud_connection):
-    """This function takes a directory path and an existing Openstack connection and deletes the user ID from directory/security_groups.osprobe.cleanup"""
+    """This function takes a directory path and an existing Openstack connection and deletes the security group ID from directory/security_groups.osprobe.cleanup"""
     if os.path.exists(os.path.join(directory, 'security_groups.osprobe.cleanup')):
         with open(os.path.join(directory, 'security_groups.osprobe.cleanup'), 'r') as f:
             lines = f.readlines()
@@ -231,11 +293,11 @@ def runner(cloud):
     delete_users(clean_directory, connection)
     delete_vms(clean_directory, connection)
     delete_fips(clean_directory, connection)
-    #delete_trunks(clean_directory, connection) # TODO: DEFINE THIS FUNCTION
+    delete_trunks(clean_directory, connection)
     delete_ports(clean_directory, connection)
     delete_subnets(clean_directory, connection)
     delete_networks(clean_directory, connection)
-    #delete_routers(clean_directory, connection) # TODO: DEFINE THIS FUNCTION
+    delete_routers(clean_directory, connection)
     delete_security_groups(clean_directory, connection)
     delete_stacks(clean_directory, connection)
     
