@@ -228,7 +228,7 @@ def delete_routers(directory, cloud_connection):
                         for port in list(cloud_connection.network.ports(**filters)):
                             if port.device_owner != "network:router_gateway":
                                 if args.debug:
-                                    print(f"Found attachment outside of gatewayport: {my_portid} {my_subnetid}\n")
+                                    print(f"Found attachment outside of gatewayport: subnet {my_subnetid}\n")
                                 my_portid = port.id
                                 for ip_spec in port.fixed_ips:
                                     my_subnetid = ip_spec.get('subnet_id')
